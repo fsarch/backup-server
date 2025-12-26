@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString, IsBoolean, IsInt, Min, Length } from 'class-validator';
 import { Expose } from 'class-transformer';
+import { IsCronExpression } from '../validators/is-cron.decorator.js';
 
 export class CreateBackupJobDto {
   @IsNotEmpty()
@@ -13,6 +14,7 @@ export class CreateBackupJobDto {
 
   @IsNotEmpty()
   @IsString()
+  @IsCronExpression({ message: 'cronExpression must be a valid cron string' })
   cronExpression: string;
 
   @IsOptional()
@@ -38,6 +40,7 @@ export class UpdateBackupJobDto {
 
   @IsOptional()
   @IsString()
+  @IsCronExpression({ message: 'cronExpression must be a valid cron string' })
   cronExpression?: string;
 
   @IsOptional()

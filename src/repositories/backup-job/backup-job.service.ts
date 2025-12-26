@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BackupJob } from '../../database/entities/backup-job.entity.js';
+import { CronTime } from 'cron';
 
 @Injectable()
 export class BackupJobService {
@@ -10,7 +11,26 @@ export class BackupJobService {
     private readonly repo: Repository<BackupJob>,
   ) {}
 
+  private computeNextExecution(cronExpression: string): Date | null {
+    try {
+      const ct = new CronTime(cronExpression);
+      const next = ct.sendAt();
+      // CronTime returns a Luxon DateTime; convert to JS Date
+      if (next && typeof (next as any).toJSDate === 'function') {
+        return (next as any).toJSDate();
+      }
+      if (next instanceof Date) return next;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   async create(data: Partial<BackupJob>) {
+    if (data.cronExpression) {
+      const next = this.computeNextExecution(data.cronExpression);
+      if (next) data.nextExecutionTime = next;
+    }
     const entity = this.repo.create(data as BackupJob);
     return this.repo.save(entity);
   }
@@ -24,6 +44,10 @@ export class BackupJobService {
   }
 
   async update(id: string, data: Partial<BackupJob>) {
+    if (data.cronExpression) {
+      const next = this.computeNextExecution(data.cronExpression);
+      if (next) data.nextExecutionTime = next;
+    }
     await this.repo.update(id, data);
     return this.findOne(id);
   }
@@ -35,4 +59,3 @@ export class BackupJobService {
     return entity;
   }
 }
-
