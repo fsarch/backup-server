@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConnectorModule } from "./connector/connector.module.js";
 
 @Module({
-  imports: [],
+  imports: [ConnectorModule],
 })
 export class RepositoriesModule {}
