@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
-import { VersioningType } from "@nestjs/common";
+import { VersioningType, ValidationPipe } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { PinoLogger } from "./utils/logger/pino-logger.service.js";
 
@@ -10,13 +10,20 @@ async function bootstrap() {
   });
   app.enableCors();
 
+  // Global validation pipe to validate DTOs
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: false,
+    transform: true,
+  }));
+
   app.enableVersioning({
     type: VersioningType.URI,
   });
 
   const config = new DocumentBuilder()
-    .setTitle('Material-Tracing-Server')
-    .setDescription('The Material-Tracing-Server API description')
+    .setTitle('Backup-Server')
+    .setDescription('A server for managing/executing backups centrally')
     .addBearerAuth()
     .setVersion('1.0')
     .build();
