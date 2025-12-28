@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { StorageService } from '../../repositories/storage/storage.service.js';
 import { CreateStorageDto, UpdateStorageDto, StorageDto } from '../../models/storage.dto.js';
-import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { PaginationResultDto } from '../../fsarch/pagination/dto/pagination-result.dto.js';
+import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-paginated-response.decorator.js';
 
 @ApiTags('storage')
+@ApiExtraModels(PaginationResultDto, StorageDto)
 @Controller({
   path: 'storages',
   version: '1',
@@ -14,10 +17,11 @@ export class StoragesController {
   constructor(private readonly storageService: StorageService) {}
 
   @Get('')
-  @ApiOkResponse({ description: 'List storages', type: [StorageDto] })
+  @ApiPaginatedResponse(StorageDto)
   async listStorages() {
     const entities = await this.storageService.findAll();
-    return entities.map(e => instanceToPlain(plainToInstance(StorageDto as any, e, { excludeExtraneousValues: true })));
+    const data = entities.map(e => instanceToPlain(plainToInstance(StorageDto as any, e, { excludeExtraneousValues: true })));
+    return { data, total: data.length, page: 1, pageSize: data.length };
   }
 
   @Post('')

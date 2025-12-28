@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { ConnectorService } from '../../repositories/connector/connector.service.js';
 import { CreateConnectorDto, UpdateConnectorDto, ConnectorDto } from '../../models/connector.dto.js';
-import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiExtraModels, getSchemaPath } from "@nestjs/swagger";
 import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { PaginationResultDto } from '../../fsarch/pagination/dto/pagination-result.dto.js';
+import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-paginated-response.decorator.js';
 
 @ApiTags('connector')
+@ApiExtraModels(PaginationResultDto, ConnectorDto)
 @Controller({
   path: 'connectors',
   version: '1',
@@ -17,10 +20,11 @@ export class ConnectorsController {
 
   // Connectors
   @Get('')
-  @ApiOkResponse({ description: 'List connectors', type: [ConnectorDto] })
+  @ApiPaginatedResponse(ConnectorDto)
   async listConnectors() {
     const entities = await this.connectorService.findAll();
-    return entities.map(e => instanceToPlain(plainToInstance(ConnectorDto as any, e, { excludeExtraneousValues: true })));
+    const data = entities.map(e => instanceToPlain(plainToInstance(ConnectorDto as any, e, { excludeExtraneousValues: true })));
+    return { data, total: data.length, page: 1, pageSize: data.length };
   }
 
   @Post('')

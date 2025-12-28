@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { BackupJobService } from '../../repositories/backup-job/backup-job.service.js';
 import { CreateBackupJobDto, UpdateBackupJobDto, BackupJobDto } from '../../models/backup-job.dto.js';
-import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { PaginationResultDto } from '../../fsarch/pagination/dto/pagination-result.dto.js';
+import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-paginated-response.decorator.js';
 
 @ApiTags('backup-job')
+@ApiExtraModels(PaginationResultDto, BackupJobDto)
 @Controller({
   path: 'backup-jobs',
   version: '1',
@@ -14,10 +17,11 @@ export class BackupJobsController {
   constructor(private readonly backupJobService: BackupJobService) {}
 
   @Get('')
-  @ApiOkResponse({ description: 'List backup jobs', type: [BackupJobDto] })
+  @ApiPaginatedResponse(BackupJobDto)
   async listBackupJobs() {
     const entities = await this.backupJobService.findAll();
-    return entities.map(e => instanceToPlain(plainToInstance(BackupJobDto as any, e, { excludeExtraneousValues: true })));
+    const data = entities.map(e => instanceToPlain(plainToInstance(BackupJobDto as any, e, { excludeExtraneousValues: true })));
+    return { data, total: data.length, page: 1, pageSize: data.length };
   }
 
   @Post('')
