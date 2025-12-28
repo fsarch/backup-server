@@ -11,7 +11,10 @@ export class StorageService {
   ) {}
 
   async create(data: Partial<Storage>) {
-    const entity = this.repo.create(data as Storage);
+    const entity = this.repo.create({
+      id: crypto.randomUUID(),
+      ...data,
+    });
     return this.repo.save(entity);
   }
 

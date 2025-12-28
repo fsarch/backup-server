@@ -30,6 +30,8 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const PORT = process.env.PORT ?? 3000;
+  await app.listen(PORT);
+  PinoLogger.Instance.log(`Application is running on: http://localhost:${PORT}`);
 }
 bootstrap();

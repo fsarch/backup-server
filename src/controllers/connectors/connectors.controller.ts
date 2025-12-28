@@ -16,31 +16,31 @@ export class ConnectorsController {
   ) {}
 
   // Connectors
-  @Get('connectors')
+  @Get('')
   async listConnectors() {
     const entities = await this.connectorService.findAll();
     return entities.map(e => instanceToPlain(plainToInstance(ConnectorDto as any, e, { excludeExtraneousValues: true })));
   }
 
-  @Post('connectors')
+  @Post('')
   async createConnector(@Body() body: CreateConnectorDto) {
     const created = await this.connectorService.create(body as any);
     return instanceToPlain(plainToInstance(ConnectorDto as any, created, { excludeExtraneousValues: true }));
   }
 
-  @Get('connectors/:id')
+  @Get(':id')
   async getConnector(@Param('id') id: string) {
     const found = await this.connectorService.findOne(id);
     return instanceToPlain(plainToInstance(ConnectorDto as any, found, { excludeExtraneousValues: true }));
   }
 
-  @Put('connectors/:id')
+  @Put(':id')
   async updateConnector(@Param('id') id: string, @Body() body: UpdateConnectorDto) {
     const updated = await this.connectorService.update(id, body as any);
     return instanceToPlain(plainToInstance(ConnectorDto as any, updated, { excludeExtraneousValues: true }));
   }
 
-  @Delete('connectors/:id')
+  @Delete(':id')
   async deleteConnector(@Param('id') id: string) {
     const removed = await this.connectorService.remove(id);
     return instanceToPlain(plainToInstance(ConnectorDto as any, removed, { excludeExtraneousValues: true }));

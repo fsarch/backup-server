@@ -4,6 +4,10 @@ import { StoragesModule } from './storages/storages.module.js';
 import { BackupJobsModule } from './backup-jobs/backup-jobs.module.js';
 
 @Module({
-  imports: [ConnectorsModule, StoragesModule, BackupJobsModule],
+  imports: [
+    ConnectorsModule,
+    StoragesModule,
+    BackupJobsModule,
+  ],
 })
 export class ControllersModule {}
