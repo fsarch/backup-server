@@ -344,15 +344,37 @@ export class BaseTables1766748137677 implements MigrationInterface {
             primaryKeyConstraintName: 'pk__backup',
           },
           {
+            name: 'name',
+            type: 'varchar',
+            length: '512',
+            isNullable: false,
+          },
+          {
             name: 'secret',
             type: 'varchar',
             length: '1024',
             isNullable: false,
           },
           {
+            name: 'connector_service_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
+            name: 'storage_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'backup_job_id',
             type: 'uuid',
             isNullable: true,
+          },
+          {
+            name: 'timeout_seconds',
+            type: 'integer',
+            isNullable: true,
+            default: 3600,
           },
           {
             name: 'external_id',
@@ -393,11 +415,27 @@ export class BaseTables1766748137677 implements MigrationInterface {
         }, {
           name: 'IDX__backup__backup_job_id',
           columnNames: ['backup_job_id'],
+        }, {
+          name: 'IDX__backup__connector_service_id',
+          columnNames: ['connector_service_id'],
+        }, {
+          name: 'IDX__backup__storage_id',
+          columnNames: ['storage_id'],
         }],
         foreignKeys: [{
           name: 'FK__backup__backup_job_id',
           columnNames: ['backup_job_id'],
           referencedTableName: 'backup_job',
+          referencedColumnNames: ['id'],
+        }, {
+          name: 'FK__backup__connector_service_id',
+          columnNames: ['connector_service_id'],
+          referencedTableName: 'connector_service',
+          referencedColumnNames: ['id'],
+        }, {
+          name: 'FK__backup__storage_id',
+          columnNames: ['storage_id'],
+          referencedTableName: 'storage',
           referencedColumnNames: ['id'],
         }],
       }),

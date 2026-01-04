@@ -42,4 +42,10 @@ export class ConnectorServiceService {
     });
     return this.connectorServiceRepository.save(entity);
   }
+
+  public async findOne(id: string) {
+    return this.connectorServiceRepository.findOneBy({
+      id,
+    });
+  }
 }
