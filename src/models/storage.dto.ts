@@ -14,6 +14,12 @@ export class CreateStorageDto {
   @Length(1, 512)
   name: string;
 
+  @ApiProperty({ maxLength: 4096 })
+  @IsOptional()
+  @IsString()
+  @Length(0, 4096)
+  path?: string;
+
   @ApiPropertyOptional({ maxLength: 512 })
   @IsOptional()
   @IsString()

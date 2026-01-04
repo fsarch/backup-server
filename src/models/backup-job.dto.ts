@@ -15,6 +15,11 @@ export class CreateBackupJobDto {
   @IsString()
   connectorServiceId: string;
 
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  storageId: string;
+
   @ApiProperty({ description: 'Cron expression' })
   @IsNotEmpty()
   @IsString()

@@ -1,10 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, BadRequestException, Inject } from '@nestjs/common';
 import { StorageService } from '../../repositories/storage/storage.service.js';
 import { CreateStorageDto, UpdateStorageDto, StorageDto } from '../../models/storage.dto.js';
 import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PaginationResultDto } from '../../fsarch/pagination/dto/pagination-result.dto.js';
 import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-paginated-response.decorator.js';
+import { EStorageType } from "../../constants/enums/EStorageType.js";
+import { ModuleConfigurationService } from "../../fsarch/configuration/module/module-configuration.service.js";
+import { ConfigStorageType } from "../../types/ConfigStorageType.type.js";
+import path from "node:path";
+import fs from "node:fs/promises";
 
 @ApiTags('storage')
 @ApiExtraModels(PaginationResultDto, StorageDto)
@@ -14,7 +19,11 @@ import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-pag
 })
 @ApiBearerAuth()
 export class StoragesController {
-  constructor(private readonly storageService: StorageService) {}
+  constructor(
+    private readonly storageService: StorageService,
+    @Inject('STORAGE_CONFIG')
+    private readonly storageConfigService: ModuleConfigurationService<ConfigStorageType>,
+  ) {}
 
   @Get('')
   @ApiPaginatedResponse(StorageDto)
@@ -28,7 +37,19 @@ export class StoragesController {
   @ApiCreatedResponse({ description: 'Storage created', type: StorageDto })
   @ApiBadRequestResponse({ description: 'Invalid payload' })
   async createStorage(@Body() body: CreateStorageDto) {
+    if (body.storageTypeId === EStorageType.LOCAL) {
+      if (!body.path) {
+        throw new BadRequestException('Path is required for local storage type');
+      }
+
+      const basePath = path.resolve(this.storageConfigService.get('data'), body.path);
+      await fs.mkdir(basePath, {
+        recursive: true,
+      });
+    }
+
     const created = await this.storageService.create(body as any);
+
     return instanceToPlain(plainToInstance(StorageDto as any, created, { excludeExtraneousValues: true }));
   }
 

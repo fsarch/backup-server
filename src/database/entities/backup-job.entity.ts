@@ -20,6 +20,9 @@ export class BackupJob {
   @Column({ name: 'connector_service_id', type: 'uuid', nullable: false })
   connectorServiceId: string;
 
+  @Column({ name: 'storage_id', type: 'uuid', nullable: false })
+  storageId: string;
+
   @Column({ name: 'cron_expression', length: '1048', nullable: false })
   cronExpression: string;
 

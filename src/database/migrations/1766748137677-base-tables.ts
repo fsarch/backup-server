@@ -268,10 +268,15 @@ export class BaseTables1766748137677 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'storage_id',
+            type: 'uuid',
+            isNullable: false,
+          },
+          {
             name: 'cron_expression',
             type: 'varchar',
             length: '1048',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'next_execution_time',
@@ -306,6 +311,9 @@ export class BaseTables1766748137677 implements MigrationInterface {
           name: 'IDX__backup_job__connector_service_id',
           columnNames: ['connector_service_id'],
         }, {
+          name: 'IDX__backup_job__storage_id',
+          columnNames: ['storage_id'],
+        }, {
           name: 'IDX__backup_job__external_id',
           columnNames: ['external_id'],
         }],
@@ -313,6 +321,11 @@ export class BaseTables1766748137677 implements MigrationInterface {
           name: 'FK__backup_job__connector_service_id',
           columnNames: ['connector_service_id'],
           referencedTableName: 'connector_service',
+          referencedColumnNames: ['id'],
+        }, {
+          name: 'FK__backup_job__storage_id',
+          columnNames: ['storage_id'],
+          referencedTableName: 'storage',
           referencedColumnNames: ['id'],
         }]
       }),
@@ -471,7 +484,7 @@ export class BaseTables1766748137677 implements MigrationInterface {
     );
     // endregion
 
-    // region File
+    // region BackupFile
     await queryRunner.createTable(
       new Table({
         name: 'backup_file',

@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Logger } from '@nestjs/common';
 import { ConnectorService } from '../../repositories/connector/connector.service.js';
 import { CreateConnectorDto, UpdateConnectorDto, ConnectorDto } from '../../models/connector.dto.js';
 import { ApiBearerAuth, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiNotFoundResponse, ApiBadRequestResponse, ApiExtraModels, getSchemaPath } from "@nestjs/swagger";
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { PaginationResultDto } from '../../fsarch/pagination/dto/pagination-result.dto.js';
 import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-paginated-response.decorator.js';
+import { ConnectorServiceService } from "../../repositories/connector-service/connector-service.service.js";
 
 @ApiTags('connector')
 @ApiExtraModels(PaginationResultDto, ConnectorDto)
@@ -14,9 +15,22 @@ import { ApiPaginatedResponse } from '../../fsarch/pagination/decorators/api-pag
 })
 @ApiBearerAuth()
 export class ConnectorsController {
+  private readonly logger = new Logger(ConnectorsController.name);
+
   constructor(
     private readonly connectorService: ConnectorService,
+    private readonly connectorServiceService: ConnectorServiceService,
   ) {}
+
+
+  // Connector services
+  @Get('services')
+  @ApiPaginatedResponse(ConnectorDto)
+  async listConnectorServices() {
+    const entities = await this.connectorServiceService.getAllForDisplay();
+
+    return { data: entities, total: entities.length, page: 1, pageSize: entities.length };
+  }
 
   // Connectors
   @Get('')
@@ -31,7 +45,26 @@ export class ConnectorsController {
   @ApiCreatedResponse({ description: 'Connector created', type: ConnectorDto })
   @ApiBadRequestResponse({ description: 'Invalid payload' })
   async createConnector(@Body() body: CreateConnectorDto) {
+    const services = await this.connectorService.requestConnectorServices(body.url);
+
     const created = await this.connectorService.create(body as any);
+
+    for (let service of services) {
+      try {
+        await this.connectorServiceService.create({
+          connectorId: created.id,
+          connectorServiceId: service.id,
+          name: service.name,
+        });
+      } catch (error) {
+        this.logger.warn('Failed to create connector service {service} for connector {connectorId}: {error}', {
+          service: JSON.stringify(service),
+          connectorId: created.id,
+          error,
+        });
+      }
+    }
+
     return instanceToPlain(plainToInstance(ConnectorDto as any, created, { excludeExtraneousValues: true }));
   }
 

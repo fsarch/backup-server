@@ -31,7 +31,10 @@ export class BackupJobService {
       const next = this.computeNextExecution(data.cronExpression);
       if (next) data.nextExecutionTime = next;
     }
-    const entity = this.repo.create(data as BackupJob);
+    const entity = this.repo.create({
+      id: crypto.randomUUID(),
+      ...data,
+    });
     return this.repo.save(entity);
   }
 
